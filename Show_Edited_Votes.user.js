@@ -3,7 +3,7 @@
 // @namespace   com.tuggy.nathan
 // @description Displays a list of posts that have been edited since voting
 // @include     /^https?:\/\/(?:meta\.)?(?:stackoverflow|stackapps|askubuntu|serverfault|superuser|[^\/\.]+\.stackexchange)\.com\/users\/\d+\/.*\?tab=votes/
-// @version     1.3.01
+// @version     1.4.03
 // @grant       none
 // ==/UserScript==//
 // Throttling implementation borrowed from rene's Match Against Peers In Review
@@ -37,7 +37,10 @@ function parseInt(str) {
       counter = $('h1 > span.count').first(),
       progress = $('<img src="/content/img/progress-dots.gif"></img>'),
       state = "start",
-      voteAddPendingCounter;
+      voteAddPendingCounter,
+      currentFilterText = $('.user-tab-sorts > a.youarehere').first().text().trim(),
+      includeDown = currentFilterText != "upvote",
+      includeUp = currentFilterText != "downvote";
 
   // Add first page of given vote type
   function addFirstPage(voteType) {
@@ -207,8 +210,11 @@ function parseInt(str) {
       switch (state) {
         case "upvote-paging":
           setThrottle(); 
-          addFirstPage("downvote");
-          break;
+          if (includeDown) {
+            addFirstPage("downvote");
+            break;
+          }
+          // otherwise, fall through
         case "downvote-paging":
           // API calls, if there's anything to do
           if (ids.length > 0) {
@@ -263,7 +269,12 @@ function parseInt(str) {
     $('.pager').remove();
     progress.show();
     
-    addFirstPage("upvote");
+    if (includeUp) {
+      addFirstPage("upvote");
+    }
+    else {
+      addFirstPage("downvote");
+    }
     interval = window.setInterval(task, intervalTime);
     return false;
   });
