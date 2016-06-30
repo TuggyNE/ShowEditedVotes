@@ -2,8 +2,8 @@
 // @name        Show Edited Votes
 // @namespace   com.tuggy.nathan
 // @description Displays a list of posts that have been edited since voting
-// @include     /^https?:\/\/(?:meta\.)?(?:stackoverflow|[^\/\.]+\.stackexchange)\.com\/users\/\d+\/.*\?tab=votes/
-// @version     1.2.05
+// @include     /^https?:\/\/(?:meta\.)?(?:stackoverflow|stackapps|askubuntu|serverfault|superuser|[^\/\.]+\.stackexchange)\.com\/users\/\d+\/.*\?tab=votes/
+// @version     1.3.01
 // @grant       none
 // ==/UserScript==//
 // Throttling implementation borrowed from rene's Match Against Peers In Review
@@ -65,7 +65,7 @@ function parseInt(str) {
     const methodBase = 'https://api.stackexchange.com/2.2/posts/',
           paramBaseA = '?pagesize=100&order=desc&min=',
           paramBaseB = '&sort=activity&filter=!)4k-FmSEkrkChRkSHXPXHE2SxOhY&site=',
-          sitePattern = /(?:meta\.)?(?:[^\.\/]+(?=\.stackexchange)|stackoverflow)/;
+          sitePattern = /(?:meta\.)?(?:[^\.\/]+(?=\.stackexchange)|stackoverflow|stackapps|askubuntu|serverfault|superuser)/;
     var siteMatch = sitePattern.exec(document.location.hostname), siteParam;
     state = "API-calling";
     handler = apiHandler;
