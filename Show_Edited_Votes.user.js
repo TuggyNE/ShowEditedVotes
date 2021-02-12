@@ -3,7 +3,7 @@
 // @namespace   com.tuggy.nathan
 // @description Displays a list of posts that have been edited since voting
 // @include     /^https?:\/\/(?:meta\.)?(?:stackoverflow|stackapps|askubuntu|serverfault|superuser|[^\/\.]+\.stackexchange)\.com\/users\/\d+\/.*\?tab=votes/
-// @version     1.4.03
+// @version     1.5.00
 // @grant       none
 // ==/UserScript==//
 // Throttling implementation borrowed from rene's Match Against Peers In Review
@@ -66,7 +66,7 @@ function parseInt(str) {
   // For each 100 post IDs, put a task in the queue, doing preliminary filtering by the earliest of those posts' vote dates
   function addAPICalls() {
     const methodBase = 'https://api.stackexchange.com/2.2/posts/',
-          paramBaseA = '?pagesize=100&order=desc&min=',
+          paramBaseA = '?pagesize=100&order=desc&key=V8Sw6puqD0eUqphKLGadPw((&min=',
           paramBaseB = '&sort=activity&filter=!)4k-FmSEkrkChRkSHXPXHE2SxOhY&site=',
           sitePattern = /(?:meta\.)?(?:[^\.\/]+(?=\.stackexchange)|stackoverflow|stackapps|askubuntu|serverfault|superuser)/;
     var siteMatch = sitePattern.exec(document.location.hostname), siteParam;
@@ -147,7 +147,7 @@ function parseInt(str) {
       });
     counter.text(parseInt(counter.text()) + modified.length);
     
-    if (0 == data.quota_remaining) {
+    if (0 === data.quota_remaining) {
       alert("Show Edited Votes: Out of quota!");
       window.clearInterval(interval);   // Drop the rest on the floor
       // TODO? Set date flag to not even try until tomorrow
