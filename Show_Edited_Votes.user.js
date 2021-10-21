@@ -88,11 +88,12 @@ function parseInt(str) {
     handler = apiHandler;
     if (siteMatch) {
       siteParam = siteMatch[0];
-    }
-    else {
+    } else {
       alert("Show Edited Votes: Couldn't find site abbreviation in URL! ('" + document.location.hostname + "')");
       return;
     }
+    console.log(siteMatch);
+    console.log(siteParam);
     while (ids.length > 0) {
       let paramIDs = ids.slice(0, 100), idParam = paramIDs.join(';');
       let minParam = paramIDs.map(function (e) {
@@ -126,8 +127,8 @@ function parseInt(str) {
     }
   }
   function apiHandler(data) {
-    const spanDownvote = '<span style="color:maroon;">downvote</span>',
-          spanUpvote   = '<span style="color:green ;">  upvote</span>';
+    const spanDownvote = '<span class="fc-red-600">downvote</span>',
+          spanUpvote   = '<span class="fc-green-500">upvote</span>';
     if (data.backoff) {
       alert("Show Edited Votes: Backing off for " + data.backoff + " seconds");
       setThrottle(Date.now() + data.backoff);
@@ -270,7 +271,7 @@ function parseInt(str) {
     if (isAllowed()) {
       taskWorker();
     } else {
-      //console.log('<< throttle >>');
+      //console.log('<< throttle >> ' + getThrottle());
     }
   }
 
@@ -285,8 +286,7 @@ function parseInt(str) {
 
     if (includeUp) {
       addFirstPage("upvote");
-    }
-    else {
+    } else {
       addFirstPage("downvote");
     }
     interval = window.setInterval(task, intervalTime);
