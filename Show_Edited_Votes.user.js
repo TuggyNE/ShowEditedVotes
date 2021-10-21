@@ -3,7 +3,7 @@
 // @namespace   com.tuggy.nathan
 // @description Displays a list of posts that have been edited since voting
 // @include     /^https?:\/\/(?:meta\.)?(?:stackoverflow|stackapps|askubuntu|serverfault|superuser|[^\/\.]+\.stackexchange)\.com\/users\/\d+\/.*\?tab=votes/
-// @version     1.5.00
+// @version     1.6.00
 // @grant       none
 // ==/UserScript==//
 /* Copyright Nathan Tuggy 2016-2019
