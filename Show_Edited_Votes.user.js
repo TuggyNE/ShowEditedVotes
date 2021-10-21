@@ -44,9 +44,9 @@ function parseInt(str) {
       ids = [],
       lastVoted = [],
       voteTypes = [],
-      filters = $('.subheader .js-user-tab-sorts').first(),
+      filters = $('.js-user-tab-sorts').first(),
       table = $('.history-table > tbody').first(),
-      editedFilter = $('<a href="#" class="s-btn s-btn__muted s-btn__outlined s-btn__xs js-user-tab-sort">Edited since voting</a>'),
+      editedFilter = $('<a href="?tab=votes&sort=edited" class="s-btn s-btn__muted s-btn__outlined s-btn__xs js-user-tab-sort">Edited since voting</a>'),
       idCurrentUser = new Number(/\/(\d+)\//.exec(document.location.href)[1]),
       counter = $('h1 > span.count').first(),
       progress = $('<img src="/content/img/progress-dots.gif"></img>'),
@@ -92,8 +92,8 @@ function parseInt(str) {
       alert("Show Edited Votes: Couldn't find site abbreviation in URL! ('" + document.location.hostname + "')");
       return;
     }
-    console.log(siteMatch);
-    console.log(siteParam);
+    //console.log(siteMatch);
+    //console.log(siteParam);
     while (ids.length > 0) {
       let paramIDs = ids.slice(0, 100), idParam = paramIDs.join(';');
       let minParam = paramIDs.map(function (e) {
