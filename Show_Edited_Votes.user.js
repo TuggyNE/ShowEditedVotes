@@ -3,7 +3,7 @@
 // @namespace   com.tuggy.nathan
 // @description Displays a list of posts that have been edited since voting
 // @include     /^https?:\/\/(?:meta\.)?(?:stackoverflow|stackapps|askubuntu|serverfault|superuser|[^\/\.]+\.stackexchange)\.com\/users\/\d+\/.*\?tab=votes/
-// @version     1.5.00
+// @version     1.6.00
 // @grant       none
 // ==/UserScript==//
 /* Copyright Nathan Tuggy 2016-2019
@@ -44,15 +44,15 @@ function parseInt(str) {
       ids = [],
       lastVoted = [],
       voteTypes = [],
-      filters = $('.subtabs.user-tab-sorts').first(),
+      filters = $('.js-user-tab-sorts').first(),
       table = $('.history-table > tbody').first(),
-      editedFilter = $('<a href="#">edited since voting</a>'),
+      editedFilter = $('<a href="?tab=votes&sort=edited" class="s-btn s-btn__muted s-btn__outlined s-btn__xs js-user-tab-sort">Edited since voting</a>'),
       idCurrentUser = new Number(/\/(\d+)\//.exec(document.location.href)[1]),
       counter = $('h1 > span.count').first(),
       progress = $('<img src="/content/img/progress-dots.gif"></img>'),
       state = "start",
       voteAddPendingCounter,
-      currentFilterText = $('.user-tab-sorts > a.youarehere').first().text().trim(),
+      currentFilterText = $('.js-user-tab-sorts > a.is-selected').first().text().trim(),
       includeDown = currentFilterText != "upvote",
       includeUp = currentFilterText != "downvote";
 
@@ -64,7 +64,7 @@ function parseInt(str) {
     voteAddPendingCounter = 0;
     tasks.push(urlFirst);
   }
-  
+
   // For each page of the type from the page given, put a task in the queue
   function addPages(docFirst) {
     var urlFirst = this,
@@ -76,7 +76,7 @@ function parseInt(str) {
       tasks.push(urlFirst + '&page=' + i);
     }
   }
-  
+
   // For each 100 post IDs, put a task in the queue, doing preliminary filtering by the earliest of those posts' vote dates
   function addAPICalls() {
     const methodBase = 'https://api.stackexchange.com/2.2/posts/',
@@ -88,11 +88,12 @@ function parseInt(str) {
     handler = apiHandler;
     if (siteMatch) {
       siteParam = siteMatch[0];
-    }
-    else {
+    } else {
       alert("Show Edited Votes: Couldn't find site abbreviation in URL! ('" + document.location.hostname + "')");
       return;
     }
+    //console.log(siteMatch);
+    //console.log(siteParam);
     while (ids.length > 0) {
       let paramIDs = ids.slice(0, 100), idParam = paramIDs.join(';');
       let minParam = paramIDs.map(function (e) {
@@ -126,14 +127,14 @@ function parseInt(str) {
     }
   }
   function apiHandler(data) {
-    const spanDownvote = '<span style="color:maroon;">downvote</span>',
-          spanUpvote   = '<span style="color:green ;">  upvote</span>';
+    const spanDownvote = '<span class="fc-red-600">downvote</span>',
+          spanUpvote   = '<span class="fc-green-500">upvote</span>';
     if (data.backoff) {
       alert("Show Edited Votes: Backing off for " + data.backoff + " seconds");
       setThrottle(Date.now() + data.backoff);
       return;
     }
-    
+
     var modified = [];
     if (data.items) {
       modified = data.items.filter(function (item) {
@@ -147,9 +148,9 @@ function parseInt(str) {
     modified.forEach(function (item) {
         let date = new Date(lastVoted[item.post_id] * 1000);
         // TODO: Add edited date to display
-        table.append('<tr><td><div class="date_brick" title="' + 
-            date.toLocaleString() + 
-            '">' + 
+        table.append('<tr><td><div class="date_brick" title="' +
+            date.toLocaleString() +
+            '">' +
             months[date.getMonth()] + " " + date.getDate() +
             '</div></td><td>' +
             ('downvote' == voteTypes[item.post_id] ? spanDownvote : spanUpvote) +
@@ -160,7 +161,7 @@ function parseInt(str) {
             '</a></b></td></tr>');
       });
     counter.text(parseInt(counter.text()) + modified.length);
-    
+
     if (0 === data.quota_remaining) {
       alert("Show Edited Votes: Out of quota!");
       window.clearInterval(interval);   // Drop the rest on the floor
@@ -181,12 +182,12 @@ function parseInt(str) {
     }
     return calls;
   }
-  
+
   // update timestamp array for throttle
   function setThrottle(time) {
     var calls = getThrottle(),
         i;
-    
+
     if (time === undefined) {
         time = Date.now();
     }
@@ -196,26 +197,26 @@ function parseInt(str) {
     if (calls.length > rate) {
       calls.shift();
     }
-    calls.push(time); 
+    calls.push(time);
     window.localStorage.setItem('se-throttle', JSON.stringify(calls));
   }
-  
+
   // gets called by the setInterval
   function taskWorker() {
     var url = tasks.shift(), jqXHR;
 
     if (url) {
       $.get(url)
-        .done(function (data) { 
+        .done(function (data) {
           setThrottle();
-          handler(data); 
+          handler(data);
         })
         .fail(function (xhr, stat, error) {
           // Service Unavailable means we're throttled, panic
           //console.log(xhr);
           if (xhr.status === 503) {
             // wait a full minute to get free
-            setThrottle(Date.now() + penalty); 
+            setThrottle(Date.now() + penalty);
           }
         });
     }
@@ -223,7 +224,7 @@ function parseInt(str) {
       // current state empty, what's next?
       switch (state) {
         case "upvote-paging":
-          setThrottle(); 
+          setThrottle();
           if (includeDown) {
             addFirstPage("downvote");
             break;
@@ -232,7 +233,7 @@ function parseInt(str) {
         case "downvote-paging":
           // API calls, if there's anything to do
           if (ids.length > 0) {
-            setThrottle(); 
+            setThrottle();
             addAPICalls();
             break;
           }
@@ -243,59 +244,57 @@ function parseInt(str) {
             break;
           }
           // fall through
-        default: 
+        default:
           // nothing left to do
           progress.hide();
-          setThrottle(); 
+          setThrottle();
           window.clearInterval(interval);
           if ("API-calling" != state) alert("Show Edited Votes: Finished '" + state + "' state unexpectedly");
       }
     }
   }
-  
+
   // check if we are within the throttle boundaries
   function isAllowed() {
     var calls = getThrottle(),
         timepassed;
-       
+
     timepassed = Date.now() - calls[0];
     //console.log(timepassed);
-    return (((calls.length < rate) || 
-           (timepassed > per)) && 
+    return (((calls.length < rate) ||
+           (timepassed > per)) &&
            (calls[calls.length-1] < Date.now()));
   }
-  
+
   // handle a task
   function task() {
     if (isAllowed()) {
       taskWorker();
     } else {
-      //console.log('<< throttle >>');
+      //console.log('<< throttle >> ' + getThrottle());
     }
   }
-  
+
   editedFilter.click(function () {
-    filters.find('.youarehere').removeClass('youarehere');
-    editedFilter.addClass('youarehere');
+    filters.find('.is-selected').removeClass('is-selected');
+    editedFilter.addClass('is-selected');
     counter.parent().html('<span class="count">0</span> Edits Since Votes Cast');
     counter = $('h1 > span.count').first();
     table.empty();
     $('.pager').remove();
     progress.show();
-    
+
     if (includeUp) {
       addFirstPage("upvote");
-    }
-    else {
+    } else {
       addFirstPage("downvote");
     }
     interval = window.setInterval(task, intervalTime);
     return false;
   });
-  
+
   editedFilter.append(progress);
   progress.css('margin-left', '0.5em');
   progress.hide();
-  filters.prepend(editedFilter);
+  filters.append(editedFilter);
 }($ || unsafeWindow.$, window || unsafeWindow));
-  
